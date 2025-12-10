@@ -368,12 +368,36 @@ function group(array, keySelector, valueSelector) {
  */
 
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  selector: '',
+
+  isElement: false,
+  isId: false,
+  isPseudoEl: false,
+
+  lastType: null,
+
+  createBuilder(type, value) {
+    const builder = { ...this };
+
+    builder.validate(type);
+
+    builder.selector += value;
+
+    builder.lastType = type;
+
+    if (type === 'el') builder.isElement = true;
+    if (type === 'id') builder.isId = true;
+    if (type === 'pseudoEl') builder.isPseudoEl = true;
+
+    return builder;
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  element(value) {
+    return this.createBuilder('el', value);
+  },
+
+  id(value) {
+    return this.createBuilder('id', `#${value}`);
   },
 
   class(/* value */) {
