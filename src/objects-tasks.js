@@ -400,24 +400,61 @@ const cssSelectorBuilder = {
     return this.createBuilder('id', `#${value}`);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(value) {
+    return this.createBuilder('class', `.${value}`);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(value) {
+    return this.createBuilder('attr', `[${value}]`);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(value) {
+    return this.createBuilder('pseudoClass', `:${value}`);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(value) {
+    return this.createBuilder('pseudoEl', `::${value}`);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  stringify() {
+    return this.selector;
+  },
+
+  validate(type) {
+    const selectorMapOrder = {
+      el: 0,
+      id: 1,
+      class: 2,
+      attr: 3,
+      pseudoClass: 4,
+      pseudoEl: 5,
+    };
+
+    if (
+      this.lastType &&
+      selectorMapOrder[type] < selectorMapOrder[this.lastType]
+    ) {
+      throw new Error(
+        'Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element'
+      );
+    }
+
+    if (
+      (type === 'el' && this.isElement) ||
+      (type === 'id' && this.isId) ||
+      (type === 'pseudoEl' && this.isPseudoEl)
+    ) {
+      throw new Error(
+        'Element, id and pseudo-element should not occur more than one time inside the selector'
+      );
+    }
+  },
+
+  combine(selector1, combinator, selector2) {
+    const builder = { ...this };
+    builder.selector = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+
+    return builder;
   },
 };
 
